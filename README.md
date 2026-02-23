@@ -1,4 +1,4 @@
-# x.sunnyjoshi.com
+# X
 
 Personal experiment lab — where design meets AI, code meets curiosity.
 
