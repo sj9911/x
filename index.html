@@ -1,0 +1,1040 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>x — Sunny Joshi</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+    <style>
+        /* === Theme Variables === */
+        :root {
+            --lime: #C9FF15;
+            --blue: #0703FF;
+            --transition-theme: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        [data-theme="dark"] {
+            --bg: #000000;
+            --bg-nav: rgba(0, 0, 0, 0.72);
+            --bg-nav-scroll: rgba(0, 0, 0, 0.88);
+            --glass-bg: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --glass-hover: rgba(255, 255, 255, 0.08);
+            --glass-shadow: rgba(0, 0, 0, 0.4);
+            --text-primary: #f5f5f7;
+            --text-secondary: rgba(245, 245, 247, 0.6);
+            --text-tertiary: rgba(245, 245, 247, 0.3);
+            --accent: var(--lime);
+            --accent-secondary: var(--blue);
+            --accent-soft: rgba(201, 255, 21, 0.1);
+            --accent-glow: rgba(201, 255, 21, 0.25);
+            --divider: rgba(255, 255, 255, 0.06);
+            --card-icon-bg: rgba(255, 255, 255, 0.05);
+            --card-tag-bg: rgba(255, 255, 255, 0.04);
+            --card-tag-border: rgba(255, 255, 255, 0.06);
+            --orb-1: #0a2a1a;
+            --orb-2: #1a0a3a;
+            --orb-3: #0a1a2a;
+            --featured-grad-1: rgba(201, 255, 21, 0.06);
+            --featured-grad-2: rgba(7, 3, 255, 0.08);
+            --featured-orb: var(--lime);
+            --badge-dot: #30d158;
+            --toggle-bg: rgba(255, 255, 255, 0.08);
+            --toggle-border: rgba(255, 255, 255, 0.12);
+            --toggle-icon: var(--text-secondary);
+        }
+
+        [data-theme="light"] {
+            --bg: #f5f5f7;
+            --bg-nav: rgba(245, 245, 247, 0.72);
+            --bg-nav-scroll: rgba(245, 245, 247, 0.92);
+            --glass-bg: rgba(255, 255, 255, 0.55);
+            --glass-border: rgba(0, 0, 0, 0.06);
+            --glass-hover: rgba(255, 255, 255, 0.75);
+            --glass-shadow: rgba(0, 0, 0, 0.08);
+            --text-primary: #1d1d1f;
+            --text-secondary: rgba(29, 29, 31, 0.6);
+            --text-tertiary: rgba(29, 29, 31, 0.35);
+            --accent: var(--blue);
+            --accent-secondary: var(--lime);
+            --accent-soft: rgba(7, 3, 255, 0.08);
+            --accent-glow: rgba(7, 3, 255, 0.15);
+            --divider: rgba(0, 0, 0, 0.06);
+            --card-icon-bg: rgba(0, 0, 0, 0.04);
+            --card-tag-bg: rgba(0, 0, 0, 0.03);
+            --card-tag-border: rgba(0, 0, 0, 0.06);
+            --orb-1: #d4f0d0;
+            --orb-2: #d0d0f8;
+            --orb-3: #d0e8f0;
+            --featured-grad-1: rgba(7, 3, 255, 0.04);
+            --featured-grad-2: rgba(201, 255, 21, 0.08);
+            --featured-orb: var(--blue);
+            --badge-dot: #30d158;
+            --toggle-bg: rgba(0, 0, 0, 0.05);
+            --toggle-border: rgba(0, 0, 0, 0.08);
+            --toggle-icon: var(--text-secondary);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            font-size: 16px;
+            scroll-behavior: smooth;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', sans-serif;
+            background: var(--bg);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+            transition: background var(--transition-theme), color var(--transition-theme);
+        }
+
+        /* === Ambient Background === */
+        .ambient-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            overflow: hidden;
+        }
+
+        .ambient-orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(120px);
+            opacity: 0.45;
+            animation: float 20s ease-in-out infinite;
+            transition: background 1s ease;
+        }
+
+        .orb-1 {
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, var(--orb-1) 0%, transparent 70%);
+            top: -15%;
+            left: -10%;
+        }
+
+        .orb-2 {
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, var(--orb-2) 0%, transparent 70%);
+            top: 40%;
+            right: -15%;
+            animation-delay: -7s;
+        }
+
+        .orb-3 {
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, var(--orb-3) 0%, transparent 70%);
+            bottom: -10%;
+            left: 30%;
+            animation-delay: -14s;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            33% { transform: translate(30px, -30px) scale(1.05); }
+            66% { transform: translate(-20px, 20px) scale(0.95); }
+        }
+
+        /* === Grain === */
+        .grain {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            pointer-events: none;
+            opacity: 0.025;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E");
+            background-repeat: repeat;
+            background-size: 256px 256px;
+        }
+
+        /* === Navigation === */
+        nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+            padding: 0 48px;
+            height: 56px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: var(--bg-nav);
+            backdrop-filter: saturate(180%) blur(20px);
+            -webkit-backdrop-filter: saturate(180%) blur(20px);
+            border-bottom: 0.5px solid var(--divider);
+            opacity: 0;
+            animation: fadeDown 0.8s ease forwards 0.2s;
+            transition: background var(--transition-theme), border-color var(--transition-theme);
+        }
+
+        .nav-brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+            color: var(--text-primary);
+        }
+
+        .nav-logo {
+            width: 28px;
+            height: 28px;
+            border-radius: 7px;
+            background: linear-gradient(135deg, var(--lime), var(--blue));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 14px;
+            letter-spacing: -0.5px;
+            color: #000;
+        }
+
+        .nav-title {
+            font-size: 14px;
+            font-weight: 500;
+            letter-spacing: -0.2px;
+            color: var(--text-secondary);
+            transition: color var(--transition-theme);
+        }
+
+        .nav-title span {
+            color: var(--text-primary);
+            font-weight: 600;
+            transition: color var(--transition-theme);
+        }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 28px;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 28px;
+            align-items: center;
+        }
+
+        .nav-links a {
+            font-size: 12px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            letter-spacing: 0.2px;
+            transition: color 0.3s ease;
+        }
+
+        .nav-links a:hover {
+            color: var(--text-primary);
+        }
+
+        /* === Theme Toggle === */
+        .theme-toggle {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            background: var(--toggle-bg);
+            border: 0.5px solid var(--toggle-border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+
+        .theme-toggle:hover {
+            background: var(--glass-hover);
+            border-color: var(--glass-border);
+        }
+
+        .theme-toggle svg {
+            width: 16px;
+            height: 16px;
+            color: var(--toggle-icon);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: absolute;
+        }
+
+        .icon-sun {
+            opacity: 0;
+            transform: rotate(-90deg) scale(0.5);
+        }
+
+        .icon-moon {
+            opacity: 1;
+            transform: rotate(0deg) scale(1);
+        }
+
+        [data-theme="light"] .icon-sun {
+            opacity: 1;
+            transform: rotate(0deg) scale(1);
+        }
+
+        [data-theme="light"] .icon-moon {
+            opacity: 0;
+            transform: rotate(90deg) scale(0.5);
+        }
+
+        /* === Main Content === */
+        main {
+            position: relative;
+            z-index: 2;
+            max-width: 1080px;
+            margin: 0 auto;
+            padding: 0 32px;
+        }
+
+        /* === Hero === */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 120px 0 80px;
+            position: relative;
+        }
+
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 16px 6px 8px;
+            border-radius: 100px;
+            background: var(--glass-bg);
+            border: 0.5px solid var(--glass-border);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            font-size: 12px;
+            color: var(--text-secondary);
+            letter-spacing: 0.3px;
+            margin-bottom: 32px;
+            opacity: 0;
+            animation: fadeUp 0.8s ease forwards 0.4s;
+            transition: background var(--transition-theme), border-color var(--transition-theme), color var(--transition-theme);
+        }
+
+        .badge-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--badge-dot);
+            box-shadow: 0 0 8px rgba(48, 209, 88, 0.5);
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
+        }
+
+        .hero h1 {
+            font-family: 'Instrument Serif', Georgia, serif;
+            font-size: clamp(64px, 10vw, 120px);
+            font-weight: 400;
+            letter-spacing: -3px;
+            line-height: 0.95;
+            margin-bottom: 24px;
+            opacity: 0;
+            animation: fadeUp 1s ease forwards 0.6s;
+            transition: color var(--transition-theme);
+        }
+
+        .hero h1 em {
+            font-style: italic;
+            background: linear-gradient(135deg, var(--lime), var(--blue));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero-sub {
+            font-size: clamp(16px, 2vw, 20px);
+            font-weight: 300;
+            color: var(--text-secondary);
+            line-height: 1.6;
+            max-width: 520px;
+            letter-spacing: -0.2px;
+            opacity: 0;
+            animation: fadeUp 1s ease forwards 0.8s;
+            transition: color var(--transition-theme);
+        }
+
+        .hero-cta {
+            margin-top: 48px;
+            display: flex;
+            gap: 16px;
+            opacity: 0;
+            animation: fadeUp 1s ease forwards 1s;
+        }
+
+        .btn-primary {
+            padding: 12px 28px;
+            border-radius: 980px;
+            background: var(--accent);
+            color: #000;
+            font-size: 14px;
+            font-weight: 600;
+            text-decoration: none;
+            letter-spacing: -0.1px;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+        }
+
+        [data-theme="light"] .btn-primary {
+            color: #fff;
+        }
+
+        .btn-primary:hover {
+            transform: scale(1.04);
+            box-shadow: 0 8px 32px var(--accent-glow);
+        }
+
+        .btn-ghost {
+            padding: 12px 28px;
+            border-radius: 980px;
+            background: transparent;
+            color: var(--accent);
+            font-size: 14px;
+            font-weight: 500;
+            text-decoration: none;
+            letter-spacing: -0.1px;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn-ghost:hover {
+            background: var(--accent-soft);
+        }
+
+        /* === Scroll Indicator === */
+        .scroll-hint {
+            position: absolute;
+            bottom: 36px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            opacity: 0;
+            animation: fadeUp 0.8s ease forwards 1.4s;
+            z-index: 5;
+            transition: opacity 0.4s ease;
+        }
+
+        .scroll-hint.hidden {
+            opacity: 0 !important;
+            pointer-events: none;
+        }
+
+        .scroll-hint span {
+            font-size: 10px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--text-tertiary);
+            transition: color var(--transition-theme);
+        }
+
+        .scroll-line {
+            width: 1px;
+            height: 32px;
+            background: linear-gradient(to bottom, var(--text-tertiary), transparent);
+            animation: scrollPulse 2s ease-in-out infinite;
+        }
+
+        @keyframes scrollPulse {
+            0%, 100% { opacity: 0.3; transform: scaleY(1); }
+            50% { opacity: 1; transform: scaleY(1.2); }
+        }
+
+        /* === Section Styles === */
+        section {
+            padding: 120px 0;
+        }
+
+        .section-label {
+            font-size: 12px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--accent);
+            margin-bottom: 16px;
+            transition: color var(--transition-theme);
+        }
+
+        .section-title {
+            font-family: 'Instrument Serif', Georgia, serif;
+            font-size: clamp(36px, 5vw, 56px);
+            font-weight: 400;
+            letter-spacing: -1.5px;
+            line-height: 1.1;
+            margin-bottom: 16px;
+            transition: color var(--transition-theme);
+        }
+
+        .section-desc {
+            font-size: 17px;
+            font-weight: 300;
+            color: var(--text-secondary);
+            line-height: 1.6;
+            max-width: 480px;
+            letter-spacing: -0.1px;
+            transition: color var(--transition-theme);
+        }
+
+        /* === Glass Cards Grid === */
+        .experiments-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+            margin-top: 64px;
+        }
+
+        .glass-card {
+            background: var(--glass-bg);
+            border: 0.5px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 36px;
+            backdrop-filter: blur(40px) saturate(150%);
+            -webkit-backdrop-filter: blur(40px) saturate(150%);
+            transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+            opacity: 0;
+            transform: translateY(30px);
+        }
+
+        .glass-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.12), transparent);
+        }
+
+        [data-theme="light"] .glass-card::before {
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.8), transparent);
+        }
+
+        .glass-card:hover {
+            background: var(--glass-hover);
+            border-color: var(--accent);
+            transform: translateY(-2px);
+            box-shadow: 0 20px 60px -20px var(--glass-shadow),
+                        0 0 0 0.5px var(--accent);
+        }
+
+        .glass-card.visible {
+            opacity: 1;
+            transform: translateY(0);
+            transition: opacity 0.7s ease, transform 0.7s ease, background 0.4s ease, border-color 0.4s ease, box-shadow 0.4s ease;
+        }
+
+        .card-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            margin-bottom: 20px;
+            background: var(--card-icon-bg);
+            border: 0.5px solid var(--glass-border);
+            transition: background var(--transition-theme), border-color var(--transition-theme);
+        }
+
+        .card-title {
+            font-size: 18px;
+            font-weight: 600;
+            letter-spacing: -0.3px;
+            margin-bottom: 8px;
+            transition: color var(--transition-theme);
+        }
+
+        .card-desc {
+            font-size: 14px;
+            font-weight: 300;
+            color: var(--text-secondary);
+            line-height: 1.55;
+            letter-spacing: -0.1px;
+            transition: color var(--transition-theme);
+        }
+
+        .card-tag {
+            display: inline-block;
+            margin-top: 20px;
+            font-size: 11px;
+            letter-spacing: 0.5px;
+            color: var(--text-tertiary);
+            padding: 4px 10px;
+            border-radius: 6px;
+            background: var(--card-tag-bg);
+            border: 0.5px solid var(--card-tag-border);
+            transition: all var(--transition-theme);
+        }
+
+        .glass-card.featured {
+            grid-column: span 2;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            align-items: center;
+            padding: 48px;
+        }
+
+        .featured-visual {
+            aspect-ratio: 4/3;
+            border-radius: 12px;
+            background: linear-gradient(135deg, var(--featured-grad-1), var(--featured-grad-2));
+            border: 0.5px solid var(--glass-border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+            transition: all var(--transition-theme);
+        }
+
+        .featured-visual::after {
+            content: '';
+            position: absolute;
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: radial-gradient(circle, var(--featured-orb), transparent);
+            opacity: 0.2;
+            filter: blur(40px);
+            animation: float 8s ease-in-out infinite;
+        }
+
+        .featured-visual-text {
+            font-family: 'Instrument Serif', Georgia, serif;
+            font-size: 28px;
+            font-style: italic;
+            color: var(--text-tertiary);
+            z-index: 1;
+            transition: color var(--transition-theme);
+        }
+
+        /* === About Section === */
+        .about-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 80px;
+            margin-top: 64px;
+            align-items: start;
+        }
+
+        .about-text {
+            font-size: 17px;
+            font-weight: 300;
+            color: var(--text-secondary);
+            line-height: 1.8;
+            letter-spacing: -0.1px;
+            transition: color var(--transition-theme);
+        }
+
+        .about-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        .stat-card {
+            background: var(--glass-bg);
+            border: 0.5px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 24px;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            transition: all var(--transition-theme);
+        }
+
+        .stat-number {
+            font-family: 'Instrument Serif', Georgia, serif;
+            font-size: 36px;
+            font-weight: 400;
+            letter-spacing: -1px;
+            margin-bottom: 4px;
+            color: var(--accent);
+            transition: color var(--transition-theme);
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: var(--text-tertiary);
+            letter-spacing: 0.5px;
+            transition: color var(--transition-theme);
+        }
+
+        /* === Divider === */
+        .divider {
+            width: 100%;
+            height: 0.5px;
+            background: linear-gradient(90deg, transparent, var(--divider), transparent);
+            transition: background var(--transition-theme);
+        }
+
+        /* === Footer === */
+        footer {
+            padding: 48px 0;
+            border-top: 0.5px solid var(--divider);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: border-color var(--transition-theme);
+        }
+
+        .footer-left {
+            font-size: 12px;
+            color: var(--text-tertiary);
+            letter-spacing: 0.2px;
+            transition: color var(--transition-theme);
+        }
+
+        .footer-links {
+            display: flex;
+            gap: 24px;
+        }
+
+        .footer-links a {
+            font-size: 12px;
+            color: var(--text-tertiary);
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .footer-links a:hover {
+            color: var(--accent);
+        }
+
+        /* === Animations === */
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* === Selection === */
+        [data-theme="dark"] ::selection {
+            background: rgba(201, 255, 21, 0.3);
+            color: #fff;
+        }
+
+        [data-theme="light"] ::selection {
+            background: rgba(7, 3, 255, 0.2);
+            color: #000;
+        }
+
+        /* === Responsive === */
+        @media (max-width: 768px) {
+            nav { padding: 0 20px; }
+            main { padding: 0 20px; }
+            .hero h1 { letter-spacing: -2px; }
+            .experiments-grid { grid-template-columns: 1fr; }
+            .glass-card.featured {
+                grid-column: span 1;
+                grid-template-columns: 1fr;
+                padding: 36px;
+            }
+            .about-content {
+                grid-template-columns: 1fr;
+                gap: 48px;
+            }
+            .nav-links { display: none; }
+            footer {
+                flex-direction: column;
+                gap: 24px;
+                text-align: center;
+            }
+            .hero-cta {
+                flex-direction: column;
+                align-items: center;
+            }
+            section { padding: 80px 0; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Ambient Background -->
+    <div class="ambient-bg">
+        <div class="ambient-orb orb-1"></div>
+        <div class="ambient-orb orb-2"></div>
+        <div class="ambient-orb orb-3"></div>
+    </div>
+    <div class="grain"></div>
+
+    <!-- Navigation -->
+    <nav>
+        <a href="#" class="nav-brand">
+            <div class="nav-logo">x</div>
+            <div class="nav-title"><span>Sunny Joshi</span> / experiments</div>
+        </a>
+        <div class="nav-right">
+            <div class="nav-links">
+                <a href="#experiments">Experiments</a>
+                <a href="#about">About</a>
+                <a href="https://sunnyjoshi.com" target="_blank">Portfolio ↗</a>
+            </div>
+            <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
+                <svg class="icon-sun" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z" />
+                </svg>
+                <svg class="icon-moon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z" />
+                </svg>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main>
+
+        <!-- Hero -->
+        <section class="hero">
+            <div class="hero-badge">
+                <div class="badge-dot"></div>
+                Personal experiment lab
+            </div>
+            <h1>where ideas<br>become <em>x</em></h1>
+            <p class="hero-sub">
+                A space where design meets AI, code meets curiosity,
+                and every prototype is an experiment worth shipping.
+            </p>
+            <div class="hero-cta">
+                <a href="#experiments" class="btn-primary">Explore Experiments</a>
+                <a href="#about" class="btn-ghost">Learn More</a>
+            </div>
+            <div class="scroll-hint" id="scrollHint">
+                <span>Scroll</span>
+                <div class="scroll-line"></div>
+            </div>
+        </section>
+
+        <div class="divider"></div>
+
+        <!-- Experiments -->
+        <section id="experiments">
+            <div class="section-label">Experiments</div>
+            <div class="section-title">Things I'm<br>building lately</div>
+            <p class="section-desc">
+                Each project starts as a question. Some become products.
+                All of them teach me something new.
+            </p>
+
+            <div class="experiments-grid">
+                <div class="glass-card featured">
+                    <div>
+                        <div class="card-icon">🧠</div>
+                        <div class="card-title">AI Agent Workflows</div>
+                        <div class="card-desc">
+                            Exploring multi-agent orchestration patterns —
+                            how autonomous agents collaborate, delegate,
+                            and solve complex problems together.
+                        </div>
+                        <div class="card-tag">Multi-Agent Systems</div>
+                    </div>
+                    <div class="featured-visual">
+                        <span class="featured-visual-text">Coming soon</span>
+                    </div>
+                </div>
+
+                <div class="glass-card">
+                    <div class="card-icon">✦</div>
+                    <div class="card-title">Generative Interfaces</div>
+                    <div class="card-desc">
+                        UI components that respond to AI context —
+                        adaptive layouts, smart defaults, and interfaces
+                        that feel alive.
+                    </div>
+                    <div class="card-tag">Design × AI</div>
+                </div>
+
+                <div class="glass-card">
+                    <div class="card-icon">⚡</div>
+                    <div class="card-title">Vibe Prototypes</div>
+                    <div class="card-desc">
+                        Rapid experiments in creative coding —
+                        interactions, animations, and visual ideas
+                        built at the speed of thought.
+                    </div>
+                    <div class="card-tag">Creative Code</div>
+                </div>
+
+                <div class="glass-card">
+                    <div class="card-icon">🔍</div>
+                    <div class="card-title">Prompt Engineering</div>
+                    <div class="card-desc">
+                        Frameworks and patterns for getting the best
+                        out of large language models — from system
+                        prompts to chain-of-thought.
+                    </div>
+                    <div class="card-tag">LLM Patterns</div>
+                </div>
+
+                <div class="glass-card">
+                    <div class="card-icon">🎨</div>
+                    <div class="card-title">Design Systems</div>
+                    <div class="card-desc">
+                        Tokens, components, and systematic approaches
+                        to building consistent, scalable visual languages.
+                    </div>
+                    <div class="card-tag">Systems Thinking</div>
+                </div>
+            </div>
+        </section>
+
+        <div class="divider"></div>
+
+        <!-- About -->
+        <section id="about">
+            <div class="section-label">About</div>
+            <div class="section-title">The mind behind<br>the madness</div>
+
+            <div class="about-content">
+                <div class="about-text">
+                    I'm Sunny Joshi — a Creative Director and UI/UX Designer
+                    based in Mumbai with 9+ years of experience spanning branding,
+                    digital product design, and strategy.<br><br>
+                    This space is my playground for exploring the intersection
+                    of design and artificial intelligence. Every experiment here
+                    is an attempt to push boundaries, break patterns, and discover
+                    what's possible when creativity meets computation.
+                </div>
+                <div class="about-stats">
+                    <div class="stat-card">
+                        <div class="stat-number">9+</div>
+                        <div class="stat-label">Years in design</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">500+</div>
+                        <div class="stat-label">Students mentored</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">∞</div>
+                        <div class="stat-label">Curiosity level</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">x</div>
+                        <div class="stat-label">Experiments shipped</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer>
+            <div class="footer-left">© 2026 Sunny Joshi. Built with curiosity.</div>
+            <div class="footer-links">
+                <a href="https://sunnyjoshi.com" target="_blank">Portfolio</a>
+                <a href="https://twitter.com" target="_blank">Twitter</a>
+                <a href="https://linkedin.com" target="_blank">LinkedIn</a>
+                <a href="https://github.com" target="_blank">GitHub</a>
+            </div>
+        </footer>
+
+    </main>
+
+    <script>
+        // === Theme Toggle ===
+        const toggle = document.getElementById('themeToggle');
+        const html = document.documentElement;
+
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme) {
+            html.setAttribute('data-theme', savedTheme);
+        } else if (window.matchMedia('(prefers-color-scheme: light)').matches) {
+            html.setAttribute('data-theme', 'light');
+        }
+
+        toggle.addEventListener('click', () => {
+            const current = html.getAttribute('data-theme');
+            const next = current === 'dark' ? 'light' : 'dark';
+            html.setAttribute('data-theme', next);
+            localStorage.setItem('theme', next);
+        });
+
+        // === Scroll Hint fade ===
+        const scrollHint = document.getElementById('scrollHint');
+        let hintHidden = false;
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 80 && !hintHidden) {
+                scrollHint.classList.add('hidden');
+                hintHidden = true;
+            } else if (window.scrollY <= 80 && hintHidden) {
+                scrollHint.classList.remove('hidden');
+                hintHidden = false;
+            }
+        }, { passive: true });
+
+        // === Card Reveal ===
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach((entry, index) => {
+                if (entry.isIntersecting) {
+                    setTimeout(() => entry.target.classList.add('visible'), index * 120);
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
+
+        document.querySelectorAll('.glass-card').forEach(card => observer.observe(card));
+
+        // === Ambient Parallax ===
+        let ticking = false;
+        window.addEventListener('scroll', () => {
+            if (!ticking) {
+                window.requestAnimationFrame(() => {
+                    const y = window.scrollY;
+                    document.querySelectorAll('.ambient-orb').forEach((orb, i) => {
+                        orb.style.transform = `translateY(${y * (i + 1) * 0.03}px)`;
+                    });
+                    ticking = false;
+                });
+                ticking = true;
+            }
+        }, { passive: true });
+
+        // === Nav bg on scroll ===
+        const nav = document.querySelector('nav');
+        window.addEventListener('scroll', () => {
+            nav.style.background = window.scrollY > 20 ? 'var(--bg-nav-scroll)' : 'var(--bg-nav)';
+        }, { passive: true });
+    </script>
+
+</body>
+</html>
