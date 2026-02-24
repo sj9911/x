@@ -216,6 +216,58 @@
       line-height: 1.5;
     }
 
+    /* === URL Entry Form === */
+    .url-form {
+      display: flex;
+      gap: 8px;
+      width: 100%;
+      max-width: 300px;
+    }
+
+    #server-url {
+      flex: 1;
+      padding: 10px 14px;
+      background: var(--input-bg);
+      border: 0.5px solid var(--glass-border);
+      border-radius: 12px;
+      color: var(--text);
+      font-size: 14px;
+      outline: none;
+      min-width: 0;
+      transition: border-color 0.2s ease;
+    }
+
+    #server-url:focus { border-color: var(--accent); }
+    #server-url::placeholder { color: var(--text-secondary); }
+
+    #connect-btn {
+      padding: 10px 18px;
+      background: var(--accent);
+      color: #000;
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 600;
+      flex-shrink: 0;
+      transition: transform 0.15s ease;
+    }
+    #connect-btn:active { transform: scale(0.94); }
+
+    .url-hint {
+      font-size: 12px;
+      color: var(--text-secondary);
+      text-align: center;
+      max-width: 280px;
+      line-height: 1.6;
+    }
+
+    .url-hint code {
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      font-size: 11px;
+      background: var(--input-bg);
+      padding: 2px 6px;
+      border-radius: 5px;
+    }
+
     /* === Screen 2: Active Chat === */
     #screen-chat {
       background: var(--bg);
@@ -754,7 +806,12 @@
       </div>
 
       <div class="connect-error" id="connect-error">
-        <div class="error-msg">Couldn't connect. Make sure you're on the same network as your laptop.</div>
+        <div class="error-msg" id="connect-error-msg">Couldn't connect automatically.</div>
+        <div class="url-form">
+          <input type="url" id="server-url" placeholder="http://192.168.1.x:3847" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" />
+          <button id="connect-btn">Go</button>
+        </div>
+        <div class="url-hint">Enter the URL shown when you run <code>grass start</code> on your laptop.</div>
       </div>
     </div>
   </div>
@@ -854,9 +911,12 @@ function showScreen(id) {
 }
 
 // ─── WebSocket ────────────────────────────────────────────────────────────────
-function connect() {
+let wsHost = null; // the host:port we're connecting to
+
+function connectTo(host) {
+  wsHost = host;
   const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
-  const url = `${protocol}//${location.host}`;
+  const url = `${protocol}//${host}`;
 
   document.getElementById('connect-label').textContent = 'Connecting...';
   document.getElementById('connect-error').classList.remove('visible');
@@ -864,7 +924,7 @@ function connect() {
   try {
     ws = new WebSocket(url);
   } catch (e) {
-    handleConnectFail();
+    showConnectError('Invalid URL.');
     return;
   }
 
@@ -898,34 +958,61 @@ function connect() {
 
 function scheduleReconnect() {
   reconnectAttempts++;
-  const isFirstAttempt = reconnectAttempts <= 3;
 
+  // If we were in chat, show the disconnected overlay and keep retrying
   if (document.getElementById('screen-chat').classList.contains('active')) {
-    showDisconnectedOverlay(isFirstAttempt);
-  } else {
-    document.getElementById('connect-label').textContent = 'Reconnecting...';
-    handleConnectFail();
+    const autoRetrying = reconnectAttempts <= 3;
+    showDisconnectedOverlay(autoRetrying);
+    if (autoRetrying) {
+      clearTimeout(reconnectTimer);
+      reconnectTimer = setTimeout(() => connectTo(wsHost), 3000);
+    }
+    return;
   }
 
-  clearTimeout(reconnectTimer);
-  reconnectTimer = setTimeout(connect, 3000);
+  // On the connect screen: retry twice then show URL input
+  if (reconnectAttempts <= 2) {
+    document.getElementById('connect-label').textContent = 'Retrying...';
+    clearTimeout(reconnectTimer);
+    reconnectTimer = setTimeout(() => connectTo(wsHost), 2000);
+  } else {
+    showConnectError('Couldn\'t connect. Make sure Grass is running on your laptop.');
+  }
 }
 
-function handleConnectFail() {
-  if (reconnectAttempts > 3) {
-    document.getElementById('connect-error').classList.add('visible');
-    document.getElementById('connect-label').textContent = 'Failed to connect';
-  }
+function showConnectError(msg) {
+  document.getElementById('connect-error-msg').textContent = msg;
+  document.getElementById('connect-error').classList.add('visible');
+  document.getElementById('connect-label').textContent = 'Not connected';
 }
 
 function manualReconnect() {
   clearTimeout(reconnectTimer);
   reconnectAttempts = 0;
   hideDisconnectedOverlay();
-  connect();
+  connectTo(wsHost);
 }
 
 document.getElementById('reconnect-btn').addEventListener('click', manualReconnect);
+
+// URL form — lets user enter the Grass server URL manually
+document.getElementById('connect-btn').addEventListener('click', submitUrl);
+document.getElementById('server-url').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') submitUrl();
+});
+
+function submitUrl() {
+  const raw = document.getElementById('server-url').value.trim();
+  if (!raw) return;
+  try {
+    const parsed = new URL(raw.startsWith('http') ? raw : `http://${raw}`);
+    clearTimeout(reconnectTimer);
+    reconnectAttempts = 0;
+    connectTo(parsed.host);
+  } catch {
+    showConnectError('Invalid URL. Try: http://192.168.1.x:3847');
+  }
+}
 
 // ─── Disconnected Overlay ─────────────────────────────────────────────────────
 function showDisconnectedOverlay(autoRetrying = true) {
@@ -1178,15 +1265,16 @@ if (window.visualViewport) {
 
 // ─── Init ─────────────────────────────────────────────────────────────────────
 initTheme();
-connect();
 
-// Auto-retry reconnect if not connected after 8s
-setTimeout(() => {
-  if (!isConnected) {
-    document.getElementById('connect-error').classList.add('visible');
-    document.getElementById('connect-label').textContent = 'Retrying...';
-  }
-}, 8000);
+// Auto-connect only if served directly by the Grass CLI (port 3847).
+// Otherwise show the URL input immediately so the user can enter the server address.
+if (location.port === '3847') {
+  connectTo(location.host);
+} else {
+  document.getElementById('connect-label').textContent = 'Not connected';
+  document.getElementById('connect-error').classList.add('visible');
+  document.getElementById('connect-error-msg').textContent = 'Enter your Grass server URL to connect.';
+}
 </script>
 </body>
 </html>
