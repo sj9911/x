@@ -216,57 +216,6 @@
       line-height: 1.5;
     }
 
-    /* === URL Entry Form === */
-    .url-form {
-      display: flex;
-      gap: 8px;
-      width: 100%;
-      max-width: 300px;
-    }
-
-    #server-url {
-      flex: 1;
-      padding: 10px 14px;
-      background: var(--input-bg);
-      border: 0.5px solid var(--glass-border);
-      border-radius: 12px;
-      color: var(--text);
-      font-size: 14px;
-      outline: none;
-      min-width: 0;
-      transition: border-color 0.2s ease;
-    }
-
-    #server-url:focus { border-color: var(--accent); }
-    #server-url::placeholder { color: var(--text-secondary); }
-
-    #connect-btn {
-      padding: 10px 18px;
-      background: var(--accent);
-      color: #000;
-      border-radius: 12px;
-      font-size: 14px;
-      font-weight: 600;
-      flex-shrink: 0;
-      transition: transform 0.15s ease;
-    }
-    #connect-btn:active { transform: scale(0.94); }
-
-    .url-hint {
-      font-size: 12px;
-      color: var(--text-secondary);
-      text-align: center;
-      max-width: 280px;
-      line-height: 1.6;
-    }
-
-    .url-hint code {
-      font-family: 'SF Mono', 'Fira Code', monospace;
-      font-size: 11px;
-      background: var(--input-bg);
-      padding: 2px 6px;
-      border-radius: 5px;
-    }
 
     /* === Screen 2: Active Chat === */
     #screen-chat {
@@ -805,14 +754,6 @@
         <span id="connect-label">Connecting...</span>
       </div>
 
-      <div class="connect-error" id="connect-error">
-        <div class="error-msg" id="connect-error-msg">Couldn't connect automatically.</div>
-        <div class="url-form">
-          <input type="url" id="server-url" placeholder="http://192.168.1.x:3847" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" />
-          <button id="connect-btn">Go</button>
-        </div>
-        <div class="url-hint">Enter the URL shown when you run <code>grass start</code> on your laptop.</div>
-      </div>
     </div>
   </div>
 
@@ -877,11 +818,50 @@
 <script>
 'use strict';
 
+// ─── Mock Data ────────────────────────────────────────────────────────────────
+
+const MOCK_PROJECT = { name: 'grass', path: '/Users/sj/dev/grass' };
+
+const MOCK_RESPONSES = [
+  "Got it. Working on that now.",
+  "I've looked at the structure. The cleanest approach is to **extract the WebSocket handler** into its own module — easier to test and extend.\n\nStarting the refactor.",
+  "Done. All existing tests still pass. Want me to add edge case coverage while I'm in here?",
+  "Found a small bug — the reconnection logic doesn't reset the attempt counter on a clean disconnect. Fixing that too.",
+  "Refactor complete. Here's what changed:\n\n- Moved handler to `src/ws/handler.js`\n- Added proper error boundaries\n- Updated all import paths",
+  "On it. I'll update the types first, then work backwards through the call chain.",
+  "Almost done. Running a final check before I wrap up.",
+  "I'd suggest splitting this into two smaller functions — it'll be easier to reason about. Want me to go ahead?",
+];
+
+const MOCK_PERMISSIONS = [
+  'npm run build',
+  'git add -A && git commit -m "refactor: extract ws handler"',
+  'npx jest --coverage --watchAll=false',
+  'rm -rf dist/ && npm run build',
+];
+
+const MOCK_FILE_CHANGES = [
+  { action: 'Created',  file: 'src/ws/handler.js' },
+  { action: 'Modified', file: 'src/server.js' },
+  { action: 'Modified', file: 'package.json' },
+  { action: 'Created',  file: 'src/ws/handler.test.js' },
+  { action: 'Modified', file: 'src/utils/logger.js' },
+  { action: 'Created',  file: 'src/types/index.d.ts' },
+];
+
+const MOCK_TERMINAL_OUTPUT = [
+  '$ npm run build\n\n> grass-cli@1.0.0 build\n\nadded 3 packages in 0.8s\n✓ Build complete',
+  '$ npx jest --coverage\n\nPASS src/ws/handler.test.js\n✓ 12 tests passed in 1.2s\nCoverage: 94.3%',
+  '$ git commit -m "refactor: extract ws handler"\n\n[main f3a91c2] refactor: extract ws handler\n 3 files changed, 47 insertions(+), 12 deletions(-)',
+];
+
+let mockResponseIdx = 0;
+let mockPermIdx = 0;
+let mockFileIdx = 0;
+let mockTermIdx = 0;
+let messageCount = 0;
+
 // ─── State ────────────────────────────────────────────────────────────────────
-let ws = null;
-let reconnectTimer = null;
-let reconnectAttempts = 0;
-let isConnected = false;
 let isLoading = false;
 let currentTheme = 'dark';
 
@@ -910,190 +890,79 @@ function showScreen(id) {
   if (el) el.classList.add('active');
 }
 
-// ─── WebSocket ────────────────────────────────────────────────────────────────
-let wsHost = null; // the host:port we're connecting to
+// ─── Mock Connection ──────────────────────────────────────────────────────────
+function mockConnect() {
+  const label = document.getElementById('connect-label');
+  label.textContent = 'Connecting...';
 
-function connectTo(host) {
-  wsHost = host;
-  const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
-  const url = `${protocol}//${host}`;
+  setTimeout(() => { label.textContent = 'Handshaking...'; }, 700);
 
-  document.getElementById('connect-label').textContent = 'Connecting...';
-  document.getElementById('connect-error').classList.remove('visible');
-
-  try {
-    ws = new WebSocket(url);
-  } catch (e) {
-    showConnectError('Invalid URL.');
-    return;
-  }
-
-  ws.addEventListener('open', () => {
-    reconnectAttempts = 0;
-    isConnected = true;
-    clearTimeout(reconnectTimer);
+  setTimeout(() => {
+    document.getElementById('project-name').textContent = MOCK_PROJECT.name;
+    document.getElementById('project-path').textContent = MOCK_PROJECT.path;
     showScreen('chat');
-    setOnline(true);
-    hideDisconnectedOverlay();
-  });
-
-  ws.addEventListener('message', (evt) => {
-    try {
-      handleServerMessage(JSON.parse(evt.data));
-    } catch {
-      // ignore malformed messages
-    }
-  });
-
-  ws.addEventListener('close', () => {
-    isConnected = false;
-    setOnline(false);
-    scheduleReconnect();
-  });
-
-  ws.addEventListener('error', () => {
-    isConnected = false;
-  });
+    playOpeningSequence();
+  }, 1600);
 }
 
-function scheduleReconnect() {
-  reconnectAttempts++;
+// ─── Opening Demo Sequence ────────────────────────────────────────────────────
+function playOpeningSequence() {
+  const steps = [
+    { t: 300,  fn: () => appendMessage(renderFileChange({ action: 'Created',  file: 'src/server.js' })) },
+    { t: 700,  fn: () => appendMessage(renderFileChange({ action: 'Modified', file: 'package.json' })) },
+    { t: 1100, fn: showLoading },
+    { t: 2800, fn: () => {
+      removeLoading();
+      appendMessage(renderResponse({ content: "I've scaffolded the Express server and wired up the WebSocket layer. Need to install deps before I can go further." }));
+    }},
+    { t: 3500, fn: () => appendMessage(renderPermission({ id: 'open_perm_1', command: 'npm install ws qrcode-terminal' })) },
+  ];
+  steps.forEach(({ t, fn }) => setTimeout(fn, t));
+}
 
-  // If we were in chat, show the disconnected overlay and keep retrying
-  if (document.getElementById('screen-chat').classList.contains('active')) {
-    const autoRetrying = reconnectAttempts <= 3;
-    showDisconnectedOverlay(autoRetrying);
-    if (autoRetrying) {
-      clearTimeout(reconnectTimer);
-      reconnectTimer = setTimeout(() => connectTo(wsHost), 3000);
-    }
+// ─── Mock Reply Logic ─────────────────────────────────────────────────────────
+function mockReply() {
+  messageCount++;
+
+  // Every 3rd message → permission prompt flow
+  if (messageCount % 3 === 0) {
+    setTimeout(() => {
+      removeLoading();
+      appendMessage(renderFileChange(MOCK_FILE_CHANGES[mockFileIdx++ % MOCK_FILE_CHANGES.length]));
+      setTimeout(() => {
+        const id = `perm_${Date.now()}`;
+        appendMessage(renderPermission({ id, command: MOCK_PERMISSIONS[mockPermIdx++ % MOCK_PERMISSIONS.length] }));
+      }, 500);
+    }, 1600);
     return;
   }
 
-  // On the connect screen: retry twice then show URL input
-  if (reconnectAttempts <= 2) {
-    document.getElementById('connect-label').textContent = 'Retrying...';
-    clearTimeout(reconnectTimer);
-    reconnectTimer = setTimeout(() => connectTo(wsHost), 2000);
-  } else {
-    showConnectError('Couldn\'t connect. Make sure Grass is running on your laptop.');
-  }
-}
-
-function showConnectError(msg) {
-  document.getElementById('connect-error-msg').textContent = msg;
-  document.getElementById('connect-error').classList.add('visible');
-  document.getElementById('connect-label').textContent = 'Not connected';
-}
-
-function manualReconnect() {
-  clearTimeout(reconnectTimer);
-  reconnectAttempts = 0;
-  hideDisconnectedOverlay();
-  connectTo(wsHost);
-}
-
-document.getElementById('reconnect-btn').addEventListener('click', manualReconnect);
-
-// URL form — lets user enter the Grass server URL manually
-document.getElementById('connect-btn').addEventListener('click', submitUrl);
-document.getElementById('server-url').addEventListener('keydown', (e) => {
-  if (e.key === 'Enter') submitUrl();
-});
-
-function submitUrl() {
-  const raw = document.getElementById('server-url').value.trim();
-  if (!raw) return;
-  try {
-    const parsed = new URL(raw.startsWith('http') ? raw : `http://${raw}`);
-    clearTimeout(reconnectTimer);
-    reconnectAttempts = 0;
-    connectTo(parsed.host);
-  } catch {
-    showConnectError('Invalid URL. Try: http://192.168.1.x:3847');
-  }
-}
-
-// ─── Disconnected Overlay ─────────────────────────────────────────────────────
-function showDisconnectedOverlay(autoRetrying = true) {
-  const overlay = document.getElementById('overlay-disconnected');
-  const msg = document.getElementById('disconnect-msg');
-  const btn = document.getElementById('reconnect-btn');
-
-  overlay.classList.remove('hidden');
-  msg.textContent = autoRetrying
-    ? 'Reconnecting in 3 seconds...'
-    : 'Could not reconnect. Check your connection.';
-  btn.classList.toggle('hidden', autoRetrying);
-}
-
-function hideDisconnectedOverlay() {
-  document.getElementById('overlay-disconnected').classList.add('hidden');
-}
-
-// ─── Connection Dot ───────────────────────────────────────────────────────────
-function setOnline(online) {
-  const dot = document.getElementById('connection-dot');
-  if (online) {
-    dot.classList.remove('offline');
-  } else {
-    dot.classList.add('offline');
-  }
-}
-
-// ─── Server Message Handler ───────────────────────────────────────────────────
-function handleServerMessage(msg) {
-  switch (msg.type) {
-    case 'connected':
-      document.getElementById('project-name').textContent = msg.project || 'Project';
-      document.getElementById('project-path').textContent = msg.path || '';
-      break;
-
-    case 'response':
-      removeLoading();
-      appendMessage(renderResponse(msg));
-      break;
-
-    case 'output': {
-      // Raw text output from Claude — show as response
-      const content = (msg.content || '').trim();
-      if (content) {
-        removeLoading();
-        appendMessage(renderResponse({ content }));
-      }
-      break;
+  // All other messages → Claude text response, sometimes with a file change first
+  const delay = 1300 + Math.random() * 900;
+  setTimeout(() => {
+    removeLoading();
+    if (messageCount % 2 === 0) {
+      appendMessage(renderFileChange(MOCK_FILE_CHANGES[mockFileIdx++ % MOCK_FILE_CHANGES.length]));
     }
+    appendMessage(renderResponse({ content: MOCK_RESPONSES[mockResponseIdx++ % MOCK_RESPONSES.length] }));
+  }, delay);
+}
 
-    case 'permission':
-      removeLoading();
-      appendMessage(renderPermission(msg));
-      break;
+// ─── Permission Handler ───────────────────────────────────────────────────────
+function handlePermission(permId, allowed) {
+  const card = document.querySelector(`[data-perm-id="${permId}"]`);
+  if (!card) return;
 
-    case 'file_change':
-      appendMessage(renderFileChange(msg));
-      break;
+  const actions = card.querySelector('.perm-actions');
+  if (actions) actions.innerHTML = `<div class="perm-resolved">${allowed ? '✓ Allowed' : '✗ Denied'}</div>`;
 
-    case 'terminal':
-      appendMessage(renderTerminal(msg));
-      break;
-
-    case 'session_end':
-      removeLoading();
-      appendMessage(renderSystem(`Session ended (code ${msg.exitCode ?? '?'})`));
-      break;
-
-    case 'server_shutdown':
-      removeLoading();
-      appendMessage(renderSystem('Grass server shut down.'));
-      setOnline(false);
-      break;
-
-    case 'ping':
-      send({ type: 'pong' });
-      break;
-
-    default:
-      break;
+  if (allowed) {
+    setTimeout(() => {
+      appendMessage(renderTerminal(MOCK_TERMINAL_OUTPUT[mockTermIdx++ % MOCK_TERMINAL_OUTPUT.length]));
+      setTimeout(() => {
+        appendMessage(renderResponse({ content: 'Done. ✓ Ready to continue.' }));
+      }, 700);
+    }, 500);
   }
 }
 
@@ -1106,7 +975,6 @@ function escHtml(str) {
     .replace(/"/g, '&quot;');
 }
 
-// Minimal inline markdown: **bold**, `code`, line breaks
 function renderMarkdown(text) {
   return escHtml(text)
     .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
@@ -1130,14 +998,12 @@ function renderResponse(msg) {
 function renderLoading() {
   return `<div class="msg msg-loading" id="msg-loading">
     <div class="msg-avatar">🌿</div>
-    <div class="loading-dots">
-      <span></span><span></span><span></span>
-    </div>
+    <div class="loading-dots"><span></span><span></span><span></span></div>
   </div>`;
 }
 
 function renderPermission(msg) {
-  const id = escHtml(msg.id || '');
+  const id  = escHtml(msg.id || '');
   const cmd = escHtml(msg.command || '');
   return `<div class="msg msg-permission" data-perm-id="${id}">
     <div class="perm-card">
@@ -1156,45 +1022,33 @@ function renderPermission(msg) {
 
 function renderFileChange(msg) {
   const action = (msg.action || 'Modified').toLowerCase();
-  const label = msg.action || 'Modified';
-  const file = escHtml(msg.file || '');
-  const icon = { created: '✦', modified: '✎', deleted: '✕', wrote: '✦', updated: '✎', renamed: '→' }[action] || '•';
   return `<div class="msg msg-file">
     <div class="file-card">
-      <span class="file-action-badge ${action}">${label}</span>
-      <span class="file-name">${file}</span>
+      <span class="file-action-badge ${action}">${msg.action}</span>
+      <span class="file-name">${escHtml(msg.file || '')}</span>
     </div>
   </div>`;
 }
 
-function renderTerminal(msg) {
+function renderTerminal(content) {
   return `<div class="msg msg-terminal">
-    <div class="terminal-block"><code>${escHtml(msg.content || '')}</code></div>
-  </div>`;
-}
-
-function renderSystem(text) {
-  return `<div class="msg msg-system">
-    <span class="msg-system-text">${escHtml(text)}</span>
+    <div class="terminal-block"><code>${escHtml(content)}</code></div>
   </div>`;
 }
 
 // ─── Messages DOM Helpers ─────────────────────────────────────────────────────
 function appendMessage(html) {
   const container = document.getElementById('messages');
-  const bottomSpacer = container.querySelector('.messages-bottom-spacer');
+  const spacer = container.querySelector('.messages-bottom-spacer');
   const tmp = document.createElement('div');
   tmp.innerHTML = html;
-  const el = tmp.firstElementChild;
-  container.insertBefore(el, bottomSpacer);
+  container.insertBefore(tmp.firstElementChild, spacer);
   scrollToBottom();
 }
 
 function scrollToBottom() {
   const container = document.getElementById('messages');
-  requestAnimationFrame(() => {
-    container.scrollTop = container.scrollHeight;
-  });
+  requestAnimationFrame(() => { container.scrollTop = container.scrollHeight; });
 }
 
 function showLoading() {
@@ -1208,73 +1062,36 @@ function removeLoading() {
   if (el) { el.remove(); isLoading = false; }
 }
 
-// ─── Permission Handler ───────────────────────────────────────────────────────
-function handlePermission(permId, allowed) {
-  send({ type: 'permission_response', id: permId, allowed });
-
-  // Update card UI
-  const card = document.querySelector(`[data-perm-id="${permId}"]`);
-  if (card) {
-    const actions = card.querySelector('.perm-actions');
-    if (actions) {
-      actions.innerHTML = `<div class="perm-resolved">${allowed ? '✓ Allowed' : '✗ Denied'}</div>`;
-    }
-    // Disable further interaction
-    card.querySelectorAll('button').forEach(b => b.disabled = true);
-  }
-}
-
 // ─── Send ─────────────────────────────────────────────────────────────────────
-function send(data) {
-  if (ws && ws.readyState === WebSocket.OPEN) {
-    ws.send(JSON.stringify(data));
-  }
-}
-
 function sendPrompt() {
   const input = document.getElementById('prompt-input');
   const content = input.value.trim();
-  if (!content || !isConnected) return;
+  if (!content) return;
 
   appendMessage(renderUserBubble(content));
-  send({ type: 'prompt', content });
   input.value = '';
   showLoading();
   scrollToBottom();
+  mockReply();
 }
 
 // ─── Input Bar ────────────────────────────────────────────────────────────────
-const promptInput = document.getElementById('prompt-input');
-const sendBtn = document.getElementById('send-btn');
+document.getElementById('send-btn').addEventListener('click', sendPrompt);
 
-sendBtn.addEventListener('click', sendPrompt);
-
-promptInput.addEventListener('keydown', (e) => {
+document.getElementById('prompt-input').addEventListener('keydown', (e) => {
   if (e.key === 'Enter' && !e.shiftKey) {
     e.preventDefault();
     sendPrompt();
   }
 });
 
-// Keep input visible above keyboard on iOS
 if (window.visualViewport) {
-  window.visualViewport.addEventListener('resize', () => {
-    scrollToBottom();
-  });
+  window.visualViewport.addEventListener('resize', scrollToBottom);
 }
 
 // ─── Init ─────────────────────────────────────────────────────────────────────
 initTheme();
-
-// Auto-connect only if served directly by the Grass CLI (port 3847).
-// Otherwise show the URL input immediately so the user can enter the server address.
-if (location.port === '3847') {
-  connectTo(location.host);
-} else {
-  document.getElementById('connect-label').textContent = 'Not connected';
-  document.getElementById('connect-error').classList.add('visible');
-  document.getElementById('connect-error-msg').textContent = 'Enter your Grass server URL to connect.';
-}
+mockConnect();
 </script>
 </body>
 </html>
