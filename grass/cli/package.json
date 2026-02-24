@@ -1,0 +1,18 @@
+{
+  "name": "grass-cli",
+  "version": "1.0.0",
+  "description": "Mobile remote interface for Claude Code sessions",
+  "bin": {
+    "grass": "./bin/grass.js"
+  },
+  "dependencies": {
+    "qrcode-terminal": "^0.12.0",
+    "ws": "^8.14.2"
+  },
+  "optionalDependencies": {
+    "node-pty": "^1.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

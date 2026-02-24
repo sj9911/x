@@ -1,0 +1,1192 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="theme-color" content="#000000" />
+  <title>Grass</title>
+  <style>
+
+    /* === Reset & Base === */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; overflow: hidden; }
+    button { cursor: pointer; border: none; background: none; font: inherit; }
+    input { font: inherit; }
+
+    /* === CSS Variables === */
+    :root {
+      --transition-theme: 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      --radius-bubble: 18px;
+      --radius-card: 16px;
+      --safe-top: env(safe-area-inset-top, 0px);
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
+    }
+
+    [data-theme="dark"] {
+      --bg:            #000000;
+      --bg-secondary:  #0a0a0a;
+      --card:          rgba(255, 255, 255, 0.06);
+      --card-hover:    rgba(255, 255, 255, 0.10);
+      --text:          #F5F5F7;
+      --text-secondary:rgba(245, 245, 247, 0.55);
+      --accent:        #30D158;
+      --accent-dim:    rgba(48, 209, 88, 0.18);
+      --user-bubble:   #0A84FF;
+      --danger:        #FF453A;
+      --danger-dim:    rgba(255, 69, 58, 0.15);
+      --warning:       #FFD60A;
+      --warning-dim:   rgba(255, 214, 10, 0.12);
+      --glass-bg:      rgba(255, 255, 255, 0.06);
+      --glass-border:  rgba(255, 255, 255, 0.10);
+      --input-bg:      rgba(255, 255, 255, 0.08);
+      --topbar-bg:     rgba(0, 0, 0, 0.72);
+      --terminal-bg:   rgba(0, 0, 0, 0.75);
+      --terminal-border: rgba(255, 255, 255, 0.08);
+    }
+
+    [data-theme="light"] {
+      --bg:            #F5F5F7;
+      --bg-secondary:  #EBEBED;
+      --card:          rgba(255, 255, 255, 0.75);
+      --card-hover:    rgba(255, 255, 255, 0.90);
+      --text:          #1D1D1F;
+      --text-secondary:rgba(29, 29, 31, 0.55);
+      --accent:        #34C759;
+      --accent-dim:    rgba(52, 199, 89, 0.15);
+      --user-bubble:   #007AFF;
+      --danger:        #FF3B30;
+      --danger-dim:    rgba(255, 59, 48, 0.12);
+      --warning:       #FFCC00;
+      --warning-dim:   rgba(255, 204, 0, 0.15);
+      --glass-bg:      rgba(255, 255, 255, 0.75);
+      --glass-border:  rgba(0, 0, 0, 0.07);
+      --input-bg:      rgba(0, 0, 0, 0.05);
+      --topbar-bg:     rgba(245, 245, 247, 0.82);
+      --terminal-bg:   rgba(30, 30, 35, 0.90);
+      --terminal-border: rgba(0, 0, 0, 0.15);
+    }
+
+    /* === App Layout === */
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', sans-serif;
+      font-size: 16px;
+      -webkit-font-smoothing: antialiased;
+      transition: background var(--transition-theme), color var(--transition-theme);
+    }
+
+    /* Desktop: show phone frame */
+    @media (min-width: 480px) {
+      body {
+        background: #111;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+      }
+    }
+
+    .app {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: var(--bg);
+      transition: background var(--transition-theme);
+    }
+
+    @media (min-width: 480px) {
+      .app {
+        width: 390px;
+        height: 844px;
+        border-radius: 52px;
+        border: 10px solid #222;
+        box-shadow:
+          0 0 0 1px #333,
+          0 40px 80px rgba(0, 0, 0, 0.6),
+          0 20px 40px rgba(0, 0, 0, 0.4);
+        overflow: hidden;
+      }
+    }
+
+    /* === Screens === */
+    .screen {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.35s ease;
+    }
+    .screen.active {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    /* === Screen 1: Connect === */
+    #screen-connect {
+      align-items: center;
+      justify-content: center;
+      gap: 0;
+    }
+
+    .connect-content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .grass-logo {
+      font-size: 72px;
+      line-height: 1;
+      margin-bottom: 4px;
+      animation: float 3.5s ease-in-out infinite;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0px); }
+      50%       { transform: translateY(-10px); }
+    }
+
+    .grass-name {
+      font-size: 30px;
+      font-weight: 700;
+      letter-spacing: -0.8px;
+      color: var(--text);
+    }
+
+    .grass-tagline {
+      font-size: 14px;
+      color: var(--text-secondary);
+      margin-top: -4px;
+    }
+
+    .connect-status {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 20px;
+      padding: 10px 20px;
+      background: var(--glass-bg);
+      border: 0.5px solid var(--glass-border);
+      border-radius: 40px;
+      backdrop-filter: blur(40px) saturate(150%);
+      -webkit-backdrop-filter: blur(40px) saturate(150%);
+    }
+
+    .connect-spinner {
+      width: 16px;
+      height: 16px;
+      border: 2px solid var(--glass-border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      flex-shrink: 0;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    #connect-label {
+      font-size: 14px;
+      color: var(--text-secondary);
+    }
+
+    .connect-error {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      margin-top: 24px;
+    }
+
+    .connect-error.visible { display: flex; }
+
+    .error-msg {
+      font-size: 13px;
+      color: var(--danger);
+      text-align: center;
+      max-width: 260px;
+      line-height: 1.5;
+    }
+
+    /* === Screen 2: Active Chat === */
+    #screen-chat {
+      background: var(--bg);
+      transition: background var(--transition-theme);
+    }
+
+    /* Top Bar */
+    .top-bar {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 10;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: calc(var(--safe-top) + 12px) 16px 12px;
+      background: var(--topbar-bg);
+      backdrop-filter: blur(40px) saturate(150%);
+      -webkit-backdrop-filter: blur(40px) saturate(150%);
+      border-bottom: 0.5px solid var(--glass-border);
+      transition: background var(--transition-theme), border-color var(--transition-theme);
+    }
+
+    .project-info {
+      display: flex;
+      flex-direction: column;
+      gap: 1px;
+      overflow: hidden;
+    }
+
+    .project-name {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text);
+      letter-spacing: -0.3px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      transition: color var(--transition-theme);
+    }
+
+    .project-path {
+      font-size: 11px;
+      color: var(--text-secondary);
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      transition: color var(--transition-theme);
+    }
+
+    .top-bar-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-shrink: 0;
+      margin-left: 12px;
+    }
+
+    .theme-btn {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: var(--input-bg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 15px;
+      transition: transform 0.2s ease, background 0.2s ease;
+    }
+    .theme-btn:active { transform: scale(0.88); }
+
+    .connection-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--accent);
+      box-shadow: 0 0 0 0 var(--accent);
+      animation: pulse-dot 2.5s ease-out infinite;
+      transition: background 0.3s ease;
+    }
+    .connection-dot.offline {
+      background: var(--danger);
+      animation: none;
+      box-shadow: none;
+    }
+
+    @keyframes pulse-dot {
+      0%   { box-shadow: 0 0 0 0 rgba(48, 209, 88, 0.5); }
+      70%  { box-shadow: 0 0 0 7px rgba(48, 209, 88, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(48, 209, 88, 0); }
+    }
+
+    /* Messages Area */
+    .messages {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      overflow-y: auto;
+      overflow-x: hidden;
+      -webkit-overflow-scrolling: touch;
+      scroll-behavior: smooth;
+      padding: 0 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    /* Spacer to push content below top bar */
+    .messages-top-spacer {
+      flex-shrink: 0;
+      height: calc(var(--safe-top) + 68px);
+    }
+
+    /* Spacer to push content above input bar */
+    .messages-bottom-spacer {
+      flex-shrink: 0;
+      height: calc(var(--safe-bottom) + 72px);
+    }
+
+    /* === Message Base === */
+    .msg {
+      display: flex;
+      max-width: 100%;
+      animation: msg-appear 0.28s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+    }
+
+    @keyframes msg-appear {
+      from { opacity: 0; transform: translateY(10px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* User message — right aligned */
+    .msg-user {
+      justify-content: flex-end;
+    }
+
+    .bubble-user {
+      background: var(--user-bubble);
+      color: #fff;
+      border-radius: var(--radius-bubble) var(--radius-bubble) 4px var(--radius-bubble);
+      padding: 10px 14px;
+      max-width: 280px;
+      font-size: 16px;
+      line-height: 1.45;
+      word-break: break-word;
+    }
+
+    /* Claude message — left aligned */
+    .msg-claude {
+      align-items: flex-start;
+      gap: 8px;
+    }
+
+    .msg-avatar {
+      font-size: 22px;
+      flex-shrink: 0;
+      margin-top: 4px;
+      line-height: 1;
+    }
+
+    .bubble-claude {
+      background: var(--glass-bg);
+      border: 0.5px solid var(--glass-border);
+      backdrop-filter: blur(40px) saturate(150%);
+      -webkit-backdrop-filter: blur(40px) saturate(150%);
+      border-radius: 4px var(--radius-bubble) var(--radius-bubble) var(--radius-bubble);
+      padding: 10px 14px;
+      max-width: 280px;
+      font-size: 15px;
+      line-height: 1.5;
+      color: var(--text);
+      word-break: break-word;
+      transition: background var(--transition-theme), border-color var(--transition-theme);
+    }
+
+    .bubble-claude strong { font-weight: 600; }
+    .bubble-claude code {
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      font-size: 13px;
+      background: rgba(128, 128, 128, 0.18);
+      padding: 1px 5px;
+      border-radius: 4px;
+    }
+
+    /* Loading dots */
+    .msg-loading {
+      align-items: flex-start;
+      gap: 8px;
+    }
+
+    .loading-dots {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      padding: 13px 16px;
+      background: var(--glass-bg);
+      border: 0.5px solid var(--glass-border);
+      border-radius: 4px var(--radius-bubble) var(--radius-bubble) var(--radius-bubble);
+      backdrop-filter: blur(40px);
+      -webkit-backdrop-filter: blur(40px);
+    }
+
+    .loading-dots span {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--text-secondary);
+      display: block;
+      animation: dot-pulse 1.4s ease-in-out infinite;
+    }
+    .loading-dots span:nth-child(2) { animation-delay: 0.18s; }
+    .loading-dots span:nth-child(3) { animation-delay: 0.36s; }
+
+    @keyframes dot-pulse {
+      0%, 80%, 100% { transform: scale(0.55); opacity: 0.35; }
+      40%            { transform: scale(1);    opacity: 1; }
+    }
+
+    /* Permission prompt card */
+    .msg-permission { justify-content: flex-start; }
+
+    .perm-card {
+      background: var(--warning-dim);
+      border: 0.5px solid rgba(255, 214, 10, 0.25);
+      border-radius: var(--radius-card);
+      padding: 14px 16px;
+      max-width: 300px;
+      backdrop-filter: blur(40px) saturate(150%);
+      -webkit-backdrop-filter: blur(40px) saturate(150%);
+    }
+
+    .perm-header {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      margin-bottom: 10px;
+    }
+
+    .perm-icon { font-size: 16px; }
+
+    .perm-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--warning);
+      letter-spacing: 0.1px;
+    }
+
+    .perm-command {
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      font-size: 13px;
+      color: var(--text);
+      background: rgba(0, 0, 0, 0.25);
+      border-radius: 8px;
+      padding: 8px 10px;
+      margin-bottom: 12px;
+      word-break: break-all;
+      line-height: 1.4;
+    }
+
+    .perm-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .btn-deny, .btn-allow {
+      flex: 1;
+      padding: 9px 0;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 600;
+      transition: transform 0.15s ease, opacity 0.15s ease;
+    }
+    .btn-deny:active, .btn-allow:active { transform: scale(0.95); }
+
+    .btn-deny {
+      background: var(--danger-dim);
+      color: var(--danger);
+      border: 0.5px solid var(--danger);
+    }
+
+    .btn-allow {
+      background: var(--accent);
+      color: #000;
+    }
+
+    .perm-resolved {
+      font-size: 13px;
+      color: var(--text-secondary);
+      font-style: italic;
+      margin-top: 8px;
+      text-align: center;
+    }
+
+    /* File change card */
+    .msg-file { justify-content: flex-start; }
+
+    .file-card {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 9px 13px;
+      background: var(--glass-bg);
+      border: 0.5px solid var(--glass-border);
+      border-radius: 10px;
+      backdrop-filter: blur(40px);
+      -webkit-backdrop-filter: blur(40px);
+      max-width: 300px;
+      transition: background var(--transition-theme), border-color var(--transition-theme);
+    }
+
+    .file-action-badge {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 2px 7px;
+      border-radius: 5px;
+      flex-shrink: 0;
+      letter-spacing: 0.2px;
+    }
+    .file-action-badge.created  { background: var(--accent-dim); color: var(--accent); }
+    .file-action-badge.modified { background: rgba(10, 132, 255, 0.15); color: #0A84FF; }
+    .file-action-badge.deleted  { background: var(--danger-dim); color: var(--danger); }
+    .file-action-badge.wrote    { background: var(--accent-dim); color: var(--accent); }
+    .file-action-badge.updated  { background: rgba(10, 132, 255, 0.15); color: #0A84FF; }
+
+    .file-name {
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      font-size: 13px;
+      color: var(--text);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    /* Terminal output block */
+    .msg-terminal { justify-content: flex-start; }
+
+    .terminal-block {
+      background: var(--terminal-bg);
+      border: 0.5px solid var(--terminal-border);
+      border-radius: var(--radius-card);
+      padding: 12px 14px;
+      max-width: 300px;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .terminal-block code {
+      font-family: 'SF Mono', 'Fira Code', 'Courier New', monospace;
+      font-size: 12px;
+      color: #a8ff60;
+      line-height: 1.6;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+
+    /* System message */
+    .msg-system {
+      justify-content: center;
+    }
+
+    .msg-system-text {
+      font-size: 12px;
+      color: var(--text-secondary);
+      text-align: center;
+      padding: 4px 0;
+    }
+
+    /* === Input Bar === */
+    .input-bar {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      z-index: 10;
+      display: flex;
+      align-items: flex-end;
+      gap: 8px;
+      padding: 10px 12px calc(var(--safe-bottom) + 10px);
+      background: var(--topbar-bg);
+      backdrop-filter: blur(40px) saturate(150%);
+      -webkit-backdrop-filter: blur(40px) saturate(150%);
+      border-top: 0.5px solid var(--glass-border);
+      transition: background var(--transition-theme), border-color var(--transition-theme);
+    }
+
+    #prompt-input {
+      flex: 1;
+      min-height: 38px;
+      max-height: 120px;
+      padding: 9px 14px;
+      background: var(--input-bg);
+      border: 0.5px solid var(--glass-border);
+      border-radius: 22px;
+      color: var(--text);
+      font-size: 16px;
+      outline: none;
+      resize: none;
+      overflow-y: auto;
+      line-height: 1.4;
+      transition: background var(--transition-theme), border-color var(--transition-theme), color var(--transition-theme);
+    }
+
+    #prompt-input::placeholder {
+      color: var(--text-secondary);
+    }
+
+    #prompt-input:focus {
+      border-color: rgba(128, 128, 128, 0.35);
+    }
+
+    .send-btn {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background: var(--accent);
+      color: #000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: transform 0.15s ease, opacity 0.15s ease;
+    }
+    .send-btn:active { transform: scale(0.88); }
+    .send-btn:disabled { opacity: 0.4; }
+
+    /* === Disconnected Overlay === */
+    .overlay {
+      position: absolute;
+      inset: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0, 0, 0, 0.55);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      transition: opacity 0.3s ease;
+    }
+    .overlay.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .disconnect-card {
+      background: var(--glass-bg);
+      border: 0.5px solid var(--glass-border);
+      border-radius: 24px;
+      padding: 28px 32px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      max-width: 280px;
+      text-align: center;
+      backdrop-filter: blur(60px) saturate(150%);
+      -webkit-backdrop-filter: blur(60px) saturate(150%);
+    }
+
+    .disconnect-icon { font-size: 40px; margin-bottom: 4px; }
+
+    .disconnect-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--text);
+      letter-spacing: -0.4px;
+    }
+
+    #disconnect-msg {
+      font-size: 14px;
+      color: var(--text-secondary);
+      line-height: 1.5;
+    }
+
+    .reconnect-btn {
+      margin-top: 8px;
+      padding: 11px 28px;
+      background: var(--accent);
+      color: #000;
+      border-radius: 40px;
+      font-size: 15px;
+      font-weight: 600;
+      transition: transform 0.15s ease;
+    }
+    .reconnect-btn:active { transform: scale(0.95); }
+    .reconnect-btn.hidden { display: none; }
+
+    /* === Scrollbar === */
+    .messages::-webkit-scrollbar { width: 0; }
+
+    /* === Ambient Background === */
+    .ambient {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .orb {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(80px);
+      opacity: 0.12;
+    }
+
+    [data-theme="dark"] .orb-1 { background: #30D158; width: 300px; height: 300px; top: -100px; right: -80px; }
+    [data-theme="dark"] .orb-2 { background: #0A84FF; width: 250px; height: 250px; bottom: 50px; left: -80px; }
+    [data-theme="light"] .orb-1 { background: #34C759; width: 300px; height: 300px; top: -100px; right: -80px; opacity: 0.2; }
+    [data-theme="light"] .orb-2 { background: #007AFF; width: 250px; height: 250px; bottom: 50px; left: -80px; opacity: 0.15; }
+
+  </style>
+</head>
+<body>
+<div class="app">
+
+  <!-- Ambient background orbs -->
+  <div class="ambient">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+  </div>
+
+  <!-- ─── Screen 1: Connect ─────────────────────────────── -->
+  <div id="screen-connect" class="screen active">
+    <div class="connect-content">
+      <div class="grass-logo">🌿</div>
+      <div class="grass-name">Grass</div>
+      <div class="grass-tagline">Remote control for Claude Code</div>
+
+      <div class="connect-status">
+        <div class="connect-spinner"></div>
+        <span id="connect-label">Connecting...</span>
+      </div>
+
+      <div class="connect-error" id="connect-error">
+        <div class="error-msg">Couldn't connect. Make sure you're on the same network as your laptop.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── Screen 2: Active Chat ─────────────────────────── -->
+  <div id="screen-chat" class="screen">
+
+    <!-- Top Bar -->
+    <div class="top-bar">
+      <div class="project-info">
+        <div class="project-name" id="project-name">Project</div>
+        <div class="project-path" id="project-path">/path/to/project</div>
+      </div>
+      <div class="top-bar-actions">
+        <button class="theme-btn" id="theme-btn" aria-label="Toggle theme">
+          <span id="theme-icon">☀️</span>
+        </button>
+        <div class="connection-dot" id="connection-dot"></div>
+      </div>
+    </div>
+
+    <!-- Messages -->
+    <div class="messages" id="messages">
+      <div class="messages-top-spacer"></div>
+      <!-- messages rendered here -->
+      <div class="messages-bottom-spacer"></div>
+    </div>
+
+    <!-- Input Bar -->
+    <div class="input-bar">
+      <input
+        type="text"
+        id="prompt-input"
+        placeholder="Message Claude..."
+        autocomplete="off"
+        autocorrect="off"
+        autocapitalize="sentences"
+        enterkeyhint="send"
+      />
+      <button class="send-btn" id="send-btn" aria-label="Send">
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+          <path d="M9 15V3M9 3L3.5 8.5M9 3L14.5 8.5"
+            stroke="currentColor" stroke-width="2.2"
+            stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+    </div>
+
+  </div>
+
+  <!-- ─── Disconnected Overlay ──────────────────────────── -->
+  <div id="overlay-disconnected" class="overlay hidden">
+    <div class="disconnect-card">
+      <div class="disconnect-icon">⚠️</div>
+      <div class="disconnect-title">Connection Lost</div>
+      <div id="disconnect-msg">Reconnecting...</div>
+      <button class="reconnect-btn hidden" id="reconnect-btn">Reconnect Now</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+'use strict';
+
+// ─── State ────────────────────────────────────────────────────────────────────
+let ws = null;
+let reconnectTimer = null;
+let reconnectAttempts = 0;
+let isConnected = false;
+let isLoading = false;
+let currentTheme = 'dark';
+
+// ─── Theme ────────────────────────────────────────────────────────────────────
+function initTheme() {
+  const saved = localStorage.getItem('grass-theme');
+  const preferred = window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+  setTheme(saved || preferred);
+}
+
+function setTheme(theme) {
+  currentTheme = theme;
+  document.documentElement.setAttribute('data-theme', theme);
+  document.getElementById('theme-icon').textContent = theme === 'dark' ? '☀️' : '🌙';
+  localStorage.setItem('grass-theme', theme);
+}
+
+document.getElementById('theme-btn').addEventListener('click', () => {
+  setTheme(currentTheme === 'dark' ? 'light' : 'dark');
+});
+
+// ─── Screen Management ────────────────────────────────────────────────────────
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  const el = document.getElementById(`screen-${id}`);
+  if (el) el.classList.add('active');
+}
+
+// ─── WebSocket ────────────────────────────────────────────────────────────────
+function connect() {
+  const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
+  const url = `${protocol}//${location.host}`;
+
+  document.getElementById('connect-label').textContent = 'Connecting...';
+  document.getElementById('connect-error').classList.remove('visible');
+
+  try {
+    ws = new WebSocket(url);
+  } catch (e) {
+    handleConnectFail();
+    return;
+  }
+
+  ws.addEventListener('open', () => {
+    reconnectAttempts = 0;
+    isConnected = true;
+    clearTimeout(reconnectTimer);
+    showScreen('chat');
+    setOnline(true);
+    hideDisconnectedOverlay();
+  });
+
+  ws.addEventListener('message', (evt) => {
+    try {
+      handleServerMessage(JSON.parse(evt.data));
+    } catch {
+      // ignore malformed messages
+    }
+  });
+
+  ws.addEventListener('close', () => {
+    isConnected = false;
+    setOnline(false);
+    scheduleReconnect();
+  });
+
+  ws.addEventListener('error', () => {
+    isConnected = false;
+  });
+}
+
+function scheduleReconnect() {
+  reconnectAttempts++;
+  const isFirstAttempt = reconnectAttempts <= 3;
+
+  if (document.getElementById('screen-chat').classList.contains('active')) {
+    showDisconnectedOverlay(isFirstAttempt);
+  } else {
+    document.getElementById('connect-label').textContent = 'Reconnecting...';
+    handleConnectFail();
+  }
+
+  clearTimeout(reconnectTimer);
+  reconnectTimer = setTimeout(connect, 3000);
+}
+
+function handleConnectFail() {
+  if (reconnectAttempts > 3) {
+    document.getElementById('connect-error').classList.add('visible');
+    document.getElementById('connect-label').textContent = 'Failed to connect';
+  }
+}
+
+function manualReconnect() {
+  clearTimeout(reconnectTimer);
+  reconnectAttempts = 0;
+  hideDisconnectedOverlay();
+  connect();
+}
+
+document.getElementById('reconnect-btn').addEventListener('click', manualReconnect);
+
+// ─── Disconnected Overlay ─────────────────────────────────────────────────────
+function showDisconnectedOverlay(autoRetrying = true) {
+  const overlay = document.getElementById('overlay-disconnected');
+  const msg = document.getElementById('disconnect-msg');
+  const btn = document.getElementById('reconnect-btn');
+
+  overlay.classList.remove('hidden');
+  msg.textContent = autoRetrying
+    ? 'Reconnecting in 3 seconds...'
+    : 'Could not reconnect. Check your connection.';
+  btn.classList.toggle('hidden', autoRetrying);
+}
+
+function hideDisconnectedOverlay() {
+  document.getElementById('overlay-disconnected').classList.add('hidden');
+}
+
+// ─── Connection Dot ───────────────────────────────────────────────────────────
+function setOnline(online) {
+  const dot = document.getElementById('connection-dot');
+  if (online) {
+    dot.classList.remove('offline');
+  } else {
+    dot.classList.add('offline');
+  }
+}
+
+// ─── Server Message Handler ───────────────────────────────────────────────────
+function handleServerMessage(msg) {
+  switch (msg.type) {
+    case 'connected':
+      document.getElementById('project-name').textContent = msg.project || 'Project';
+      document.getElementById('project-path').textContent = msg.path || '';
+      break;
+
+    case 'response':
+      removeLoading();
+      appendMessage(renderResponse(msg));
+      break;
+
+    case 'output': {
+      // Raw text output from Claude — show as response
+      const content = (msg.content || '').trim();
+      if (content) {
+        removeLoading();
+        appendMessage(renderResponse({ content }));
+      }
+      break;
+    }
+
+    case 'permission':
+      removeLoading();
+      appendMessage(renderPermission(msg));
+      break;
+
+    case 'file_change':
+      appendMessage(renderFileChange(msg));
+      break;
+
+    case 'terminal':
+      appendMessage(renderTerminal(msg));
+      break;
+
+    case 'session_end':
+      removeLoading();
+      appendMessage(renderSystem(`Session ended (code ${msg.exitCode ?? '?'})`));
+      break;
+
+    case 'server_shutdown':
+      removeLoading();
+      appendMessage(renderSystem('Grass server shut down.'));
+      setOnline(false);
+      break;
+
+    case 'ping':
+      send({ type: 'pong' });
+      break;
+
+    default:
+      break;
+  }
+}
+
+// ─── Message Rendering ────────────────────────────────────────────────────────
+function escHtml(str) {
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+// Minimal inline markdown: **bold**, `code`, line breaks
+function renderMarkdown(text) {
+  return escHtml(text)
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/`(.+?)`/g, '<code>$1</code>')
+    .replace(/\n/g, '<br>');
+}
+
+function renderUserBubble(content) {
+  return `<div class="msg msg-user">
+    <div class="bubble bubble-user">${escHtml(content)}</div>
+  </div>`;
+}
+
+function renderResponse(msg) {
+  return `<div class="msg msg-claude">
+    <div class="msg-avatar">🌿</div>
+    <div class="bubble bubble-claude">${renderMarkdown(msg.content || '')}</div>
+  </div>`;
+}
+
+function renderLoading() {
+  return `<div class="msg msg-loading" id="msg-loading">
+    <div class="msg-avatar">🌿</div>
+    <div class="loading-dots">
+      <span></span><span></span><span></span>
+    </div>
+  </div>`;
+}
+
+function renderPermission(msg) {
+  const id = escHtml(msg.id || '');
+  const cmd = escHtml(msg.command || '');
+  return `<div class="msg msg-permission" data-perm-id="${id}">
+    <div class="perm-card">
+      <div class="perm-header">
+        <span class="perm-icon">⚡</span>
+        <span class="perm-title">Permission Required</span>
+      </div>
+      <div class="perm-command">${cmd}</div>
+      <div class="perm-actions">
+        <button class="btn-deny"  onclick="handlePermission('${id}', false)">Deny</button>
+        <button class="btn-allow" onclick="handlePermission('${id}', true)">Allow</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderFileChange(msg) {
+  const action = (msg.action || 'Modified').toLowerCase();
+  const label = msg.action || 'Modified';
+  const file = escHtml(msg.file || '');
+  const icon = { created: '✦', modified: '✎', deleted: '✕', wrote: '✦', updated: '✎', renamed: '→' }[action] || '•';
+  return `<div class="msg msg-file">
+    <div class="file-card">
+      <span class="file-action-badge ${action}">${label}</span>
+      <span class="file-name">${file}</span>
+    </div>
+  </div>`;
+}
+
+function renderTerminal(msg) {
+  return `<div class="msg msg-terminal">
+    <div class="terminal-block"><code>${escHtml(msg.content || '')}</code></div>
+  </div>`;
+}
+
+function renderSystem(text) {
+  return `<div class="msg msg-system">
+    <span class="msg-system-text">${escHtml(text)}</span>
+  </div>`;
+}
+
+// ─── Messages DOM Helpers ─────────────────────────────────────────────────────
+function appendMessage(html) {
+  const container = document.getElementById('messages');
+  const bottomSpacer = container.querySelector('.messages-bottom-spacer');
+  const tmp = document.createElement('div');
+  tmp.innerHTML = html;
+  const el = tmp.firstElementChild;
+  container.insertBefore(el, bottomSpacer);
+  scrollToBottom();
+}
+
+function scrollToBottom() {
+  const container = document.getElementById('messages');
+  requestAnimationFrame(() => {
+    container.scrollTop = container.scrollHeight;
+  });
+}
+
+function showLoading() {
+  if (isLoading) return;
+  isLoading = true;
+  appendMessage(renderLoading());
+}
+
+function removeLoading() {
+  const el = document.getElementById('msg-loading');
+  if (el) { el.remove(); isLoading = false; }
+}
+
+// ─── Permission Handler ───────────────────────────────────────────────────────
+function handlePermission(permId, allowed) {
+  send({ type: 'permission_response', id: permId, allowed });
+
+  // Update card UI
+  const card = document.querySelector(`[data-perm-id="${permId}"]`);
+  if (card) {
+    const actions = card.querySelector('.perm-actions');
+    if (actions) {
+      actions.innerHTML = `<div class="perm-resolved">${allowed ? '✓ Allowed' : '✗ Denied'}</div>`;
+    }
+    // Disable further interaction
+    card.querySelectorAll('button').forEach(b => b.disabled = true);
+  }
+}
+
+// ─── Send ─────────────────────────────────────────────────────────────────────
+function send(data) {
+  if (ws && ws.readyState === WebSocket.OPEN) {
+    ws.send(JSON.stringify(data));
+  }
+}
+
+function sendPrompt() {
+  const input = document.getElementById('prompt-input');
+  const content = input.value.trim();
+  if (!content || !isConnected) return;
+
+  appendMessage(renderUserBubble(content));
+  send({ type: 'prompt', content });
+  input.value = '';
+  showLoading();
+  scrollToBottom();
+}
+
+// ─── Input Bar ────────────────────────────────────────────────────────────────
+const promptInput = document.getElementById('prompt-input');
+const sendBtn = document.getElementById('send-btn');
+
+sendBtn.addEventListener('click', sendPrompt);
+
+promptInput.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    sendPrompt();
+  }
+});
+
+// Keep input visible above keyboard on iOS
+if (window.visualViewport) {
+  window.visualViewport.addEventListener('resize', () => {
+    scrollToBottom();
+  });
+}
+
+// ─── Init ─────────────────────────────────────────────────────────────────────
+initTheme();
+connect();
+
+// Auto-retry reconnect if not connected after 8s
+setTimeout(() => {
+  if (!isConnected) {
+    document.getElementById('connect-error').classList.add('visible');
+    document.getElementById('connect-label').textContent = 'Retrying...';
+  }
+}, 8000);
+</script>
+</body>
+</html>
