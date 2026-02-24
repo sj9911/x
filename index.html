@@ -646,6 +646,186 @@
             transition: color var(--transition-theme);
         }
 
+        /* === What's for Food Card === */
+        .wff-card {
+            padding: 40px 48px !important;
+            background: linear-gradient(135deg,
+                rgba(249, 115, 22, 0.06) 0%,
+                var(--glass-bg) 60%) !important;
+            border-color: rgba(249, 115, 22, 0.15) !important;
+            transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) !important;
+        }
+
+        .wff-card:hover {
+            background: linear-gradient(135deg,
+                rgba(249, 115, 22, 0.10) 0%,
+                var(--glass-bg) 60%) !important;
+            border-color: rgba(249, 115, 22, 0.30) !important;
+            box-shadow: 0 0 48px rgba(249, 115, 22, 0.08) !important;
+            transform: translateY(-2px);
+        }
+
+        .wff-inner {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 48px;
+            align-items: center;
+        }
+
+        .wff-left { display: flex; flex-direction: column; gap: 0; }
+
+        .wff-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 10px;
+            font-weight: 600;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: #f97316;
+            background: rgba(249, 115, 22, 0.12);
+            border: 0.5px solid rgba(249, 115, 22, 0.25);
+            padding: 4px 10px;
+            border-radius: 20px;
+            width: fit-content;
+            margin-bottom: 16px;
+        }
+
+        .wff-badge::before {
+            content: '';
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+            background: #f97316;
+            animation: pulse-dot 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse-dot {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.4; transform: scale(0.8); }
+        }
+
+        .wff-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-top: 20px;
+        }
+
+        .wff-visual {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .wff-glow {
+            position: absolute;
+            width: 180px;
+            height: 180px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(249, 115, 22, 0.3), transparent 70%);
+            filter: blur(40px);
+            z-index: 0;
+            animation: float 6s ease-in-out infinite;
+        }
+
+        .wff-phone {
+            position: relative;
+            z-index: 1;
+            width: 200px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 0.5px solid rgba(255,255,255,0.12);
+            border-radius: 24px;
+            padding: 20px 16px;
+            backdrop-filter: blur(20px);
+            box-shadow: 0 24px 64px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.05);
+        }
+
+        [data-theme="light"] .wff-phone {
+            background: rgba(255,255,255,0.7);
+            border-color: rgba(0,0,0,0.08);
+            box-shadow: 0 24px 64px rgba(0,0,0,0.10), inset 0 1px 0 rgba(255,255,255,0.9);
+        }
+
+        .wff-screen { display: flex; flex-direction: column; gap: 10px; }
+
+        .wff-hero-bar {
+            height: 36px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, #f97316, #ea580c);
+            margin-bottom: 4px;
+            opacity: 0.9;
+        }
+
+        .wff-meal-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255,255,255,0.04);
+            border: 0.5px solid rgba(255,255,255,0.06);
+            border-radius: 10px;
+            padding: 8px 10px;
+        }
+
+        [data-theme="light"] .wff-meal-row {
+            background: rgba(0,0,0,0.02);
+            border-color: rgba(0,0,0,0.05);
+        }
+
+        .wff-meal-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        .wff-dot-b { background: #fbbf24; }
+        .wff-dot-l { background: #f97316; }
+        .wff-dot-d { background: #818cf8; }
+
+        .wff-meal-lines { flex: 1; display: flex; flex-direction: column; gap: 4px; }
+
+        .wff-line {
+            height: 5px;
+            border-radius: 3px;
+            background: rgba(255,255,255,0.15);
+        }
+
+        [data-theme="light"] .wff-line { background: rgba(0,0,0,0.10); }
+
+        .wff-line-title { width: 80%; }
+        .wff-line-sub { width: 50%; opacity: 0.5; }
+
+        .wff-kcal {
+            font-size: 8px;
+            font-weight: 600;
+            color: rgba(249, 115, 22, 0.8);
+            white-space: nowrap;
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+        }
+
+        .wff-whatsapp {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+            background: rgba(37, 211, 102, 0.15);
+            border: 0.5px solid rgba(37, 211, 102, 0.25);
+            border-radius: 8px;
+            padding: 7px;
+            font-size: 9px;
+            font-weight: 600;
+            color: #25d366;
+            margin-top: 2px;
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+        }
+
+        @media (max-width: 768px) {
+            .wff-inner { grid-template-columns: 1fr; }
+            .wff-visual { display: none; }
+        }
+
         /* === About Section === */
         .about-content {
             display: grid;
@@ -947,6 +1127,63 @@
                         coding on your laptop or VM.
                     </div>
                     <div class="card-tag">Mobile × AI</div>
+                </a>
+
+                <a href="https://github.com/sj9911/whats-for-food" target="_blank" class="glass-card wff-card" style="text-decoration:none;color:inherit;grid-column:span 2;">
+                    <div class="wff-inner">
+                        <div class="wff-left">
+                            <div class="wff-badge">Shipped · Private Beta</div>
+                            <div class="card-icon" style="font-size:32px;margin-bottom:12px;">🍽️</div>
+                            <div class="card-title" style="font-size:22px;">What's for Food?</div>
+                            <div class="card-desc" style="margin-top:12px;max-width:380px;">
+                                AI-powered meal planning PWA for our household.
+                                Claude generates weekly Indian meal plans, tracks pantry stock,
+                                auto-builds grocery lists, and messages our cook on WhatsApp —
+                                every morning.
+                            </div>
+                            <div class="wff-tags">
+                                <span class="card-tag">Next.js 16</span>
+                                <span class="card-tag">Claude AI</span>
+                                <span class="card-tag">Supabase</span>
+                                <span class="card-tag">PWA</span>
+                            </div>
+                        </div>
+                        <div class="wff-visual">
+                            <div class="wff-phone">
+                                <div class="wff-screen">
+                                    <div class="wff-hero-bar"></div>
+                                    <div class="wff-meal-row">
+                                        <span class="wff-meal-dot wff-dot-b"></span>
+                                        <div class="wff-meal-lines">
+                                            <div class="wff-line wff-line-title"></div>
+                                            <div class="wff-line wff-line-sub"></div>
+                                        </div>
+                                        <div class="wff-kcal">310 kcal</div>
+                                    </div>
+                                    <div class="wff-meal-row">
+                                        <span class="wff-meal-dot wff-dot-l"></span>
+                                        <div class="wff-meal-lines">
+                                            <div class="wff-line wff-line-title" style="width:70%"></div>
+                                            <div class="wff-line wff-line-sub" style="width:45%"></div>
+                                        </div>
+                                        <div class="wff-kcal">520 kcal</div>
+                                    </div>
+                                    <div class="wff-meal-row">
+                                        <span class="wff-meal-dot wff-dot-d"></span>
+                                        <div class="wff-meal-lines">
+                                            <div class="wff-line wff-line-title" style="width:55%"></div>
+                                            <div class="wff-line wff-line-sub" style="width:40%"></div>
+                                        </div>
+                                        <div class="wff-kcal">420 kcal</div>
+                                    </div>
+                                    <div class="wff-whatsapp">
+                                        <span>📲</span> Share with Cook
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="wff-glow"></div>
+                        </div>
+                    </div>
                 </a>
             </div>
         </section>
