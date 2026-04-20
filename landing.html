@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CDesign</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+    <style>
+        /* === Theme Variables === */
+        :root {
+            --lime: #C9FF15;
+            --blue: #0703FF;
+            --transition-theme: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        [data-theme="dark"] {
+            --bg: #000000;
+            --text-primary: #f5f5f7;
+            --text-secondary: rgba(245, 245, 247, 0.5);
+            --accent: var(--lime);
+            --glass-bg: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --orb-1: #0a2a1a;
+            --orb-2: #1a0a3a;
+        }
+
+        [data-theme="light"] {
+            --bg: #f5f5f7;
+            --text-primary: #1d1d1f;
+            --text-secondary: rgba(29, 29, 31, 0.5);
+            --accent: var(--blue);
+            --glass-bg: rgba(0, 0, 0, 0.04);
+            --glass-border: rgba(0, 0, 0, 0.08);
+            --orb-1: #d4f7c5;
+            --orb-2: #c5d4f7;
+        }
+
+        /* === Reset === */
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            background: var(--bg);
+            color: var(--text-primary);
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif;
+            min-height: 100dvh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            transition: background var(--transition-theme), color var(--transition-theme);
+        }
+
+        /* === Ambient Background === */
+        .ambient-bg {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.6;
+            animation: drift 20s ease-in-out infinite alternate;
+        }
+
+        .orb-1 {
+            width: 500px;
+            height: 500px;
+            background: var(--orb-1);
+            top: -10%;
+            left: -10%;
+            animation-duration: 25s;
+        }
+
+        .orb-2 {
+            width: 400px;
+            height: 400px;
+            background: var(--orb-2);
+            bottom: -10%;
+            right: -10%;
+            animation-duration: 30s;
+            animation-delay: -10s;
+        }
+
+        @keyframes drift {
+            from { transform: translate(0, 0) scale(1); }
+            to   { transform: translate(40px, 30px) scale(1.08); }
+        }
+
+        /* === Main === */
+        main {
+            position: relative;
+            z-index: 2;
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .eyebrow {
+            font-size: 11px;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+            color: var(--text-secondary);
+            margin-bottom: 1.5rem;
+            transition: color var(--transition-theme);
+        }
+
+        h1 {
+            font-family: 'Instrument Serif', Georgia, serif;
+            font-style: italic;
+            font-size: clamp(56px, 10vw, 112px);
+            font-weight: 400;
+            line-height: 0.95;
+            color: var(--text-primary);
+            transition: color var(--transition-theme);
+        }
+
+        h1 em {
+            font-style: normal;
+            color: var(--accent);
+            transition: color var(--transition-theme);
+        }
+
+        .subtitle {
+            margin-top: 1.75rem;
+            font-size: clamp(14px, 1.5vw, 17px);
+            color: var(--text-secondary);
+            max-width: 360px;
+            margin-left: auto;
+            margin-right: auto;
+            line-height: 1.6;
+            transition: color var(--transition-theme);
+        }
+
+        .cta {
+            margin-top: 2.5rem;
+            display: inline-block;
+            padding: 0.75rem 2rem;
+            border: 0.5px solid var(--glass-border);
+            border-radius: 100px;
+            background: var(--glass-bg);
+            color: var(--text-primary);
+            font-size: 14px;
+            letter-spacing: 0.04em;
+            text-decoration: none;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            transition:
+                background 0.3s ease,
+                border-color 0.3s ease,
+                color var(--transition-theme);
+        }
+
+        .cta:hover {
+            background: rgba(255,255,255,0.1);
+            border-color: var(--accent);
+        }
+
+        /* === Theme Toggle === */
+        .toggle {
+            position: fixed;
+            top: 1.5rem;
+            right: 1.5rem;
+            z-index: 100;
+            background: var(--glass-bg);
+            border: 0.5px solid var(--glass-border);
+            border-radius: 100px;
+            padding: 0.5rem 0.75rem;
+            cursor: pointer;
+            font-size: 14px;
+            color: var(--text-secondary);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            transition:
+                background var(--transition-theme),
+                border-color var(--transition-theme),
+                color var(--transition-theme);
+        }
+
+        .toggle:hover { color: var(--text-primary); }
+    </style>
+</head>
+<body>
+
+    <div class="ambient-bg">
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+    </div>
+
+    <button class="toggle" id="themeToggle" aria-label="Toggle theme">☀︎</button>
+
+    <main>
+        <p class="eyebrow">Creative Design Studio</p>
+        <h1>C<em>Design</em></h1>
+        <p class="subtitle">Craft-first design for products that feel as good as they look.</p>
+        <a href="#" class="cta">Get in touch</a>
+    </main>
+
+    <script>
+        const root = document.documentElement;
+        const btn  = document.getElementById('themeToggle');
+
+        const saved = localStorage.getItem('cdesign-theme');
+        const sys   = window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+        root.setAttribute('data-theme', saved || sys);
+        btn.textContent = root.getAttribute('data-theme') === 'dark' ? '☀︎' : '☽';
+
+        btn.addEventListener('click', () => {
+            const next = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+            root.setAttribute('data-theme', next);
+            localStorage.setItem('cdesign-theme', next);
+            btn.textContent = next === 'dark' ? '☀︎' : '☽';
+        });
+    </script>
+</body>
+</html>
